@@ -41,8 +41,8 @@ var _ = BeforeSuite(func() {
 	Ω(pool).ShouldNot(BeNil())
 	Ω(pool.ActiveCount()).Should(Equal(0))
 
-	safe = NewWredis(pool)
-	unsafe = NewUnsafeWredis(pool)
+	safe = New(pool)
+	unsafe = NewUnsafe(pool)
 })
 
 // AfterSuite

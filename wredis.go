@@ -8,27 +8,27 @@ import (
 )
 
 // Wredis is a struct wrapper around the redis.Pool
+// that implements Redis commands (http://redis.io/commands)
 type Wredis struct {
-	*redis.Pool
+	pool *redis.Pool
 	safe bool
 }
 
-// NewWredis returns a wrapper around the redis.Pool that implements
-// the Redis commands `http://redis.io/commands
-func NewWredis(pool *redis.Pool) *Wredis {
+// New returns a new Wredis object
+func New(pool *redis.Pool) *Wredis {
 	if pool == nil {
-		log.Fatal("calling NewWredis with nil redis.Pool")
+		log.Fatal("calling New with nil redis.Pool")
 	}
 	return &Wredis{pool, true}
 }
 
-// NewUnsafeWredis returns an unsafe wrapper around the redis.Pool
+// NewUnsafe returns an unsafe wrapper around the redis.Pool
 // that implements the Redis commands `http://redis.io/commands.
 // The lack of safety allows usage of certain methods that could be
 // harmful if accidentally invoked in production (e.g. FlushAll)
-func NewUnsafeWredis(pool *redis.Pool) *Wredis {
+func NewUnsafe(pool *redis.Pool) *Wredis {
 	if pool == nil {
-		log.Fatal("calling NewWredis with nil redis.Pool")
+		log.Fatal("calling NewUnsafe with nil redis.Pool")
 	}
 	return &Wredis{pool, false}
 }
@@ -40,7 +40,7 @@ type Int64 func(redis.Conn) (int64, error)
 // ExecInt64 is a helper function to execute any series of commands
 // that return an int64 response
 func (r *Wredis) ExecInt64(f Int64) (int64, error) {
-	conn := r.Get()
+	conn := r.pool.Get()
 	defer conn.Close()
 	return f(conn)
 }
@@ -52,7 +52,7 @@ type String func(redis.Conn) (string, error)
 // ExecString is a helper function to execute any series of commands
 // that return a string response
 func (r *Wredis) ExecString(f String) (string, error) {
-	conn := r.Get()
+	conn := r.pool.Get()
 	defer conn.Close()
 	return f(conn)
 }
@@ -64,7 +64,7 @@ type Strings func(redis.Conn) ([]string, error)
 // ExecStrings is a helper function to execute any series of commands
 // that return a string slice response
 func (r *Wredis) ExecStrings(f Strings) ([]string, error) {
-	conn := r.Get()
+	conn := r.pool.Get()
 	defer conn.Close()
 	return f(conn)
 }
