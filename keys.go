@@ -1,11 +1,18 @@
 package wredis
 
-import "github.com/garyburd/redigo/redis"
+import (
+	"errors"
+	"fmt"
 
-// Del deletes a key or keys from redis. See http://redis.io/commands/del
+	"github.com/garyburd/redigo/redis"
+)
+
+// Del deletes a key or keys from redis. The response is
+// the number of the keys that were deleted.
+// See http://redis.io/commands/del
 func (r *Wredis) Del(key string, keys ...string) (int64, error) {
 	if key == "" {
-		return int64Error("Cannot DEL empty key")
+		return int64Error("cannot DEL an empty key")
 	}
 	var otherKeys = []string{key}
 	for _, k := range keys {
@@ -14,7 +21,7 @@ func (r *Wredis) Del(key string, keys ...string) (int64, error) {
 		}
 	}
 
-	var del Int64 = func(conn redis.Conn) (int64, error) {
+	var del = func(conn redis.Conn) (int64, error) {
 		args := redis.Args{}.Add(key).AddFlat(otherKeys)
 		return redis.Int64(conn.Do("DEL", args...))
 	}
@@ -22,16 +29,16 @@ func (r *Wredis) Del(key string, keys ...string) (int64, error) {
 }
 
 // Exists checks for the existance of `key` in Redis. Note however,
-// that even though Redis 3.0.3 allows a variable number of keys to
-// be passed, we will restrict this to a single key in order to be able
-// to return an absolute response regarding said existence.
+// even though a variable number of keys can be passed to the DEL command
+// since Redis 3.0.3, we will restrict this to a single key in order to
+// be able to return an absolute response regarding existence.
 // See http://redis.io/commands/exists
 func (r *Wredis) Exists(key string) (bool, error) {
 	if key == "" {
-		return boolError("Cannot check EXISTS for empty key")
+		return boolError("cannot check EXISTS for an empty key")
 	}
 
-	var exists Int64 = func(conn redis.Conn) (int64, error) {
+	var exists = func(conn redis.Conn) (int64, error) {
 		return redis.Int64(conn.Do("EXISTS", key))
 	}
 
@@ -42,19 +49,26 @@ func (r *Wredis) Exists(key string) (bool, error) {
 	return res == int64(1), nil
 }
 
-// Rename is a helper function to renmae `key` to `newKey`.
+// Rename will rename `key` to `newKey`. They must not be empty
+// or identical.
 // See `http://redis.io/commands/rename`
-func (r *Wredis) Rename(key, newKey string) (string, error) {
+func (r *Wredis) Rename(key, newKey string) error {
 	if key == "" || newKey == "" {
-		return stringError("Cannot RENAME with empty keys")
+		return errors.New("cannot RENAME with empty keys")
 	}
 	if key == newKey {
-		return stringError("key and newKey are identical")
+		return errors.New("cannot RENAME with identical keys")
 	}
 
-	var rename String = func(conn redis.Conn) (string, error) {
+	var rename = func(conn redis.Conn) (string, error) {
 		args := redis.Args{}.Add(key).Add(newKey)
 		return redis.String(conn.Do("RENAME", args...))
 	}
-	return r.ExecString(rename)
+	res, err := r.ExecString(rename)
+	if err != nil {
+		return err
+	} else if res != "OK" {
+		return fmt.Errorf("RENAME returned non OK repsonse: %s", res)
+	}
+	return nil
 }

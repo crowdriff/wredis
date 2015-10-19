@@ -14,7 +14,7 @@ var _ = Describe("Keys", func() {
 		Ω(unsafe.SAdd(key, set1)).Should(BeEquivalentTo(3))
 		Ω(unsafe.SAdd(newKey, set2)).Should(BeEquivalentTo(4))
 
-		Ω(unsafe.Rename(newKey, key)).Should(Equal("OK"))
+		Ω(unsafe.Rename(newKey, key)).Should(BeNil())
 		Ω(unsafe.SCard(key)).Should(BeEquivalentTo(4))
 	})
 })

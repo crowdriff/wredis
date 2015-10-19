@@ -14,7 +14,7 @@ func (r *Wredis) FlushAll() error {
 		return errors.New("Cannot use FlushAll in safe mode")
 	}
 
-	var flushall String = func(conn redis.Conn) (string, error) {
+	var flushall = func(conn redis.Conn) (string, error) {
 		return redis.String(conn.Do("FLUSHALL"))
 	}
 	res, err := r.ExecString(flushall)

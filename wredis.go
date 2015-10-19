@@ -33,37 +33,30 @@ func NewUnsafe(pool *redis.Pool) *Wredis {
 	return &Wredis{pool, false}
 }
 
-// Int64 is a func type that accepts a redis.Conn object and
-// returns an int64 response
-type Int64 func(redis.Conn) (int64, error)
+// Close closes the pool connection
+func (r *Wredis) Close() error {
+	return r.pool.Close()
+}
 
 // ExecInt64 is a helper function to execute any series of commands
-// that return an int64 response
-func (r *Wredis) ExecInt64(f Int64) (int64, error) {
+// on a redis.Conn that return an int64 response
+func (r *Wredis) ExecInt64(f func(redis.Conn) (int64, error)) (int64, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 	return f(conn)
 }
-
-// String is a func type that accepts a redis.Conn object and
-// returns a string respnose
-type String func(redis.Conn) (string, error)
 
 // ExecString is a helper function to execute any series of commands
-// that return a string response
-func (r *Wredis) ExecString(f String) (string, error) {
+// on a redis.Conn that return a string response
+func (r *Wredis) ExecString(f func(redis.Conn) (string, error)) (string, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 	return f(conn)
 }
 
-// Strings is a func type that accepts a redis.Conn object and
-// returns a string slice response
-type Strings func(redis.Conn) ([]string, error)
-
 // ExecStrings is a helper function to execute any series of commands
-// that return a string slice response
-func (r *Wredis) ExecStrings(f Strings) ([]string, error) {
+// on a redis.Conn that return a string slice response
+func (r *Wredis) ExecStrings(f func(redis.Conn) ([]string, error)) ([]string, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 	return f(conn)
