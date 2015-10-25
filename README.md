@@ -1,6 +1,8 @@
 Wredis
 ===
 
+[![Build Status](https://travis-ci.org/crowdriff/wredis.svg?branch=master)](https://travis-ci.org/crowdriff/wredis)
+
 Wredis is a wrapper around the [redigo](https://github.com/garyburd/redigo) `redis.Pool` and provides an easy-to-use API for [Redis commands](http://redis.io/commands)
 
 ## Getting Started
