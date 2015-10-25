@@ -2,10 +2,15 @@ package wredis
 
 import (
 	"errors"
-	"log"
+	"fmt"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
+
+const defaultHost = "localhost"
+const defaultPort = 6379
+const defaultDb = 0
 
 // Wredis is a struct wrapper around the redis.Pool
 // that implements Redis commands (http://redis.io/commands)
@@ -14,70 +19,72 @@ type Wredis struct {
 	safe bool
 }
 
-// New returns a new Wredis object
-func New(pool *redis.Pool) *Wredis {
-	if pool == nil {
-		log.Fatal("calling New with nil redis.Pool")
-	}
-	return &Wredis{pool, true}
+// Close closes the pool connection
+func (w *Wredis) Close() error {
+	return w.pool.Close()
 }
 
-// NewUnsafe returns an unsafe wrapper around the redis.Pool
-// that implements the Redis commands `http://redis.io/commands.
+// NewDefaultPool returns a redis.Pool with a localhost:6379 address
+// and db set to 0.
+func NewDefaultPool() (*Wredis, error) {
+	return NewPool(defaultHost, defaultPort, defaultDb)
+}
+
+// NewPool creates a redis pool connected to the given host:port and db.
+func NewPool(host string, port, db uint) (*Wredis, error) {
+	if host == "" {
+		return nil, errors.New("host cannot be empty")
+	}
+	if port == 0 {
+		return nil, errors.New("port cannot be 0")
+	}
+	addr := fmt.Sprintf("%s:%d", host, int(port))
+	pool := &redis.Pool{
+		MaxIdle:     3,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", addr, redis.DialDatabase(int(db)))
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
+	}
+	return &Wredis{pool, true}, nil
+}
+
+// NewUnsafe returns an unsafe wrapper around the redigo Pool.
 // The lack of safety allows usage of certain methods that could be
 // harmful if accidentally invoked in production (e.g. FlushAll)
-func NewUnsafe(pool *redis.Pool) *Wredis {
-	if pool == nil {
-		log.Fatal("calling NewUnsafe with nil redis.Pool")
+func NewUnsafe(host string, port, db uint) (*Wredis, error) {
+	w, err := NewPool(host, port, db)
+	if err != nil {
+		return nil, err
 	}
-	return &Wredis{pool, false}
-}
-
-// Close closes the pool connection
-func (r *Wredis) Close() error {
-	return r.pool.Close()
+	w.safe = false
+	return w, nil
 }
 
 // ExecInt64 is a helper function to execute any series of commands
 // on a redis.Conn that return an int64 response
-func (r *Wredis) ExecInt64(f func(redis.Conn) (int64, error)) (int64, error) {
-	conn := r.pool.Get()
+func (w *Wredis) ExecInt64(f func(redis.Conn) (int64, error)) (int64, error) {
+	conn := w.pool.Get()
 	defer conn.Close()
 	return f(conn)
 }
 
 // ExecString is a helper function to execute any series of commands
 // on a redis.Conn that return a string response
-func (r *Wredis) ExecString(f func(redis.Conn) (string, error)) (string, error) {
-	conn := r.pool.Get()
+func (w *Wredis) ExecString(f func(redis.Conn) (string, error)) (string, error) {
+	conn := w.pool.Get()
 	defer conn.Close()
 	return f(conn)
 }
 
 // ExecStrings is a helper function to execute any series of commands
 // on a redis.Conn that return a string slice response
-func (r *Wredis) ExecStrings(f func(redis.Conn) ([]string, error)) ([]string, error) {
-	conn := r.pool.Get()
+func (w *Wredis) ExecStrings(f func(redis.Conn) ([]string, error)) ([]string, error) {
+	conn := w.pool.Get()
 	defer conn.Close()
 	return f(conn)
-}
-
-//
-// error helper functions
-//
-
-func boolError(msg string) (bool, error) {
-	return false, errors.New(msg)
-}
-
-func int64Error(msg string) (int64, error) {
-	return int64(0), errors.New(msg)
-}
-
-func stringError(msg string) (string, error) {
-	return "", errors.New(msg)
-}
-
-func stringsError(msg string) ([]string, error) {
-	return nil, errors.New(msg)
 }

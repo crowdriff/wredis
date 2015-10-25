@@ -1,4 +1,4 @@
-version=0.0.3
+version=0.1.0
 
 .PHONY: all
 
@@ -12,11 +12,11 @@ all:
 	@echo "commands:"
 	@echo "  build         - build the dist binary"
 	@echo "  clean         - clean the dist build"
-	@echo "  install       - run go install for all sub packages"
-	@echo "  test          - standard go test"
-	@echo ""
-	@echo "  tools         - go get's a bunch of tools for dev"
+	@echo "  coverage      - generate a test coverage report"
 	@echo "  deps          - pull and setup dependencies"
+	@echo "  install       - run go install for all sub packages"
+	@echo "  test          - run tests"
+	@echo "  tools         - go get's a bunch of tools for development"
 	@echo "  update_deps   - update deps lock file"
 
 build: clean
@@ -42,6 +42,8 @@ test:
 tools:
 	go get github.com/robfig/glock
 	go get github.com/golang/lint/golint
+	go get github.com/onsi/ginkgo/ginkgo
+	go get github.com/onsi/gomega
 
 update_deps:
 	@glock save -n github.com/crowdriff/wredis > Glockfile

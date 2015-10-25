@@ -22,9 +22,6 @@ var unsafe *Wredis
 
 // other variables for testing
 var (
-	// redis.Pool
-	pool = MakeDefaultPool()
-
 	// test keys
 	key       = "wredis::test::set"
 	newKey    = "wredis::test::set::new"
@@ -38,15 +35,15 @@ var (
 
 // BeforeSuite
 var _ = BeforeSuite(func() {
-	Ω(pool).ShouldNot(BeNil())
-	Ω(pool.ActiveCount()).Should(Equal(0))
-
-	safe = New(pool)
-	unsafe = NewUnsafe(pool)
+	var err error
+	safe, err = NewDefaultPool()
+	Ω(err).Should(BeNil())
+	unsafe, err = NewUnsafe("localhost", 6379, 0)
+	Ω(err).Should(BeNil())
 })
 
 // AfterSuite
 var _ = AfterSuite(func() {
-	// TODO Ω(pool.ActiveCount()).Should(Equal(0))
-	pool.Close()
+	safe.Close()
+	unsafe.Close()
 })

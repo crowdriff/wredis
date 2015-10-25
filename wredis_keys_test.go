@@ -17,4 +17,18 @@ var _ = Describe("Keys", func() {
 		Ω(unsafe.Rename(newKey, key)).Should(BeNil())
 		Ω(unsafe.SCard(key)).Should(BeEquivalentTo(4))
 	})
+
+	Context("SET/GET", func() {
+		It("should SET and then GET a key correctly", func() {
+			testKey := "wredis::test::strings"
+			testVal := "testvalue"
+			err := safe.Set(testKey, testVal)
+			Ω(err).Should(BeNil())
+
+			val, err := safe.Get(testKey)
+			Ω(err).Should(BeNil())
+			Ω(val).Should(Equal(testVal))
+		})
+	})
+
 })

@@ -1,33 +1,23 @@
 package wredis
 
-import (
-	"log"
-	"time"
+import "errors"
 
-	"github.com/garyburd/redigo/redis"
-)
+//
+// error helper functions
+//
 
-// MakeDefaultPool returns a redis.Pool with a localhost:6379 address
-// and db set to 0
-func MakeDefaultPool() *redis.Pool {
-	return MakePool("localhost", "6379", 0)
+func boolError(msg string) (bool, error) {
+	return false, errors.New(msg)
 }
 
-// MakePool creates a redis pool connected to the given host:port and db.
-func MakePool(redisHost, redisPort string, db int) *redis.Pool {
-	if db < 0 {
-		log.Fatal("cannot have a negative db")
-	}
-	address := redisHost + ":" + redisPort
-	return &redis.Pool{
-		MaxIdle:     3,
-		IdleTimeout: 240 * time.Second,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", address, redis.DialDatabase(db))
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			_, err := c.Do("PING")
-			return err
-		},
-	}
+func int64Error(msg string) (int64, error) {
+	return int64(0), errors.New(msg)
+}
+
+func stringError(msg string) (string, error) {
+	return "", errors.New(msg)
+}
+
+func stringsError(msg string) ([]string, error) {
+	return nil, errors.New(msg)
 }
