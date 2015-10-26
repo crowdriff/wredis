@@ -20,19 +20,6 @@ func TestProcess(t *testing.T) {
 var safe *Wredis
 var unsafe *Wredis
 
-// other variables for testing
-var (
-	// test keys
-	key       = "wredis::test::set"
-	newKey    = "wredis::test::set::new"
-	gainedKey = "wredis::test::set::gained"
-	lostKey   = "wredis::test::set::lost"
-
-	// sets
-	set1 = []string{"a", "b", "c"}
-	set2 = []string{"a", "b", "d", "e"}
-)
-
 // BeforeSuite
 var _ = BeforeSuite(func() {
 	var err error
