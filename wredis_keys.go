@@ -18,18 +18,6 @@ func (w *Wredis) Del(keys ...string) (int64, error) {
 	return w.ExecInt64(del)
 }
 
-// Get fetches a key's string value.
-// See http://redis.io/commands/get
-func (w *Wredis) Get(key string) (string, error) {
-	if key == "" {
-		return stringError("key cannot be an empty string")
-	}
-	var get = func(conn redis.Conn) (string, error) {
-		return redis.String(conn.Do("GET", key))
-	}
-	return w.ExecString(get)
-}
-
 // Exists checks for the existance of `key` in Redis. Note however,
 // even though a variable number of keys can be passed to the DEL command
 // since Redis 3.0.3, we will restrict this to a single key in order to
@@ -69,24 +57,6 @@ func (w *Wredis) Rename(key, newKey string) error {
 		return err
 	} else if res != "OK" {
 		return fmt.Errorf("RENAME returned non OK response: %s", res)
-	}
-	return nil
-}
-
-// Set sets a key's string value.
-// See http://redis.io/commands/set
-func (w *Wredis) Set(key, value string) error {
-	if key == "" {
-		return errors.New("key cannot be an empty string")
-	}
-	var set = func(conn redis.Conn) (string, error) {
-		return redis.String(conn.Do("SET", key, value))
-	}
-	res, err := w.ExecString(set)
-	if err != nil {
-		return err
-	} else if res != "OK" {
-		return fmt.Errorf("SET returned non OK response: %s", res)
 	}
 	return nil
 }
