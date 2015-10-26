@@ -49,9 +49,7 @@ func main() {
 * __Keys__
   * Del: delete a key
   * Exists: does a key exist
-  * Get: get a key's value
   * Rename: rename a key
-  * Set: set a key's value
 * __Server__
   * FlushAll: Flush the contents of the redis server (requires unsafe Wredis)
 * __Sets__
@@ -60,6 +58,10 @@ func main() {
   * SDiffStore: perform a diff and store the results in redis
   * SMembers: return the members of a set
   * SUnionStore: perform a union and store the results in redis
+* __Strings__
+  * Get: get a key's value
+  * Set: set a key's value
+  * SetEx: set a key's value with an expiry in seconds
 
 ## Contributing
 

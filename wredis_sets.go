@@ -69,7 +69,12 @@ func (w *Wredis) SUnionStore(dest string, sets ...string) (int64, error) {
 		return int64Error("dest cannot be an empty string")
 	}
 	if len(sets) < 2 {
-		return int64Error("SUnionStore requires atleast 2 input sets")
+		return int64Error("SUnionStore requires at least 2 input sets")
+	}
+	for _, s := range sets {
+		if s == "" {
+			return int64Error("set keys cannot be empty strings")
+		}
 	}
 	var sunionstore = func(conn redis.Conn) (int64, error) {
 		args := redis.Args{}.Add(dest).AddFlat(sets)

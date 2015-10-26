@@ -6,29 +6,41 @@ import (
 )
 
 var _ = Describe("Keys", func() {
+
+	testKey := "wredis::test::keys"
+	testVal := "testvalue"
+
 	AfterEach(func() {
 		Ω(unsafe.FlushAll()).Should(Succeed())
 	})
 
-	It("should rename a key successfully", func() {
-		Ω(unsafe.SAdd(key, set1)).Should(BeEquivalentTo(3))
-		Ω(unsafe.SAdd(newKey, set2)).Should(BeEquivalentTo(4))
+	Context("RENAME", func() {
+		It("should rename a key successfully", func() {
+			newKey := "wredis::test::new"
+			Ω(safe.Set(testKey, testVal)).Should(Succeed())
+			Ω(safe.Rename(testKey, newKey)).Should(Succeed())
 
-		Ω(unsafe.Rename(newKey, key)).Should(BeNil())
-		Ω(unsafe.SCard(key)).Should(BeEquivalentTo(4))
-	})
+			// test rename is successful
+			Ω(safe.Exists(testKey)).Should(BeFalse())
+			Ω(safe.Exists(newKey)).Should(BeTrue())
+			Ω(safe.Get(newKey)).Should(Equal(testVal))
+		})
 
-	Context("SET/GET", func() {
-		It("should SET and then GET a key correctly", func() {
-			testKey := "wredis::test::strings"
-			testVal := "testvalue"
-			err := safe.Set(testKey, testVal)
-			Ω(err).Should(BeNil())
-
-			val, err := safe.Get(testKey)
-			Ω(err).Should(BeNil())
-			Ω(val).Should(Equal(testVal))
+		It("should fail if any of the keys are empty strings", func() {
+			Ω(safe.Rename("", "")).ShouldNot(Succeed())
+			Ω(safe.Rename("", "test")).ShouldNot(Succeed())
+			Ω(safe.Rename("test", "")).ShouldNot(Succeed())
 		})
 	})
 
+	Context("EXISTS", func() {
+		It("should return true if a key exists", func() {
+			Ω(safe.Set(testKey, testVal)).Should(Succeed())
+			Ω(safe.Exists(testKey)).Should(BeTrue())
+		})
+
+		It("should return false if a key does not exist", func() {
+			Ω(safe.Exists(testKey)).Should(BeFalse())
+		})
+	})
 })
