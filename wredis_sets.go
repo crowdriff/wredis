@@ -35,8 +35,8 @@ func (w *Wredis) SDiffStore(dest string, sets ...string) (int64, error) {
 	if dest == "" {
 		return int64Error("dest cannot be an empty string")
 	}
-	if len(sets) < 2 {
-		return int64Error("SDiffStore requires atleast 2 input sets")
+	if len(sets) == 0 {
+		return int64Error("SDiffStore requires atleast 1 input set")
 	}
 	for _, s := range sets {
 		if s == "" {
@@ -68,8 +68,8 @@ func (w *Wredis) SUnionStore(dest string, sets ...string) (int64, error) {
 	if dest == "" {
 		return int64Error("dest cannot be an empty string")
 	}
-	if len(sets) < 2 {
-		return int64Error("SUnionStore requires at least 2 input sets")
+	if len(sets) == 0 {
+		return int64Error("SUnionStore requires at least 1 input set")
 	}
 	for _, s := range sets {
 		if s == "" {
