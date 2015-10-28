@@ -2,7 +2,6 @@ package wredis
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -71,10 +70,5 @@ func (w *Wredis) Rename(key, newKey string) error {
 		return redis.String(conn.Do("RENAME", key, newKey))
 	}
 	res, err := w.ExecString(rename)
-	if err != nil {
-		return err
-	} else if res != "OK" {
-		return fmt.Errorf("RENAME returned non OK response: %s", res)
-	}
-	return nil
+	return checkSimpleStringResponse("Rename", res, err)
 }

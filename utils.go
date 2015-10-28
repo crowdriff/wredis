@@ -1,6 +1,9 @@
 package wredis
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 //
 // error helper functions
@@ -20,4 +23,13 @@ func stringError(msg string) (string, error) {
 
 func stringsError(msg string) ([]string, error) {
 	return nil, errors.New(msg)
+}
+
+func checkSimpleStringResponse(cmd, res string, err error) error {
+	if err != nil {
+		return err
+	} else if res != "OK" {
+		return fmt.Errorf("%s did not get OK response: %s", cmd, res)
+	}
+	return nil
 }
