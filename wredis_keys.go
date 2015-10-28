@@ -7,10 +7,18 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-// Del deletes one or more keys from Redis. Returns a count of how many
+// Del deletes one or more keys from Redis and returns a count of how many
 // keys were actually deleted.
 // See http://redis.io/commands/del
 func (w *Wredis) Del(keys ...string) (int64, error) {
+	if keys == nil || len(keys) == 0 {
+		return int64Error("must provide at least 1 key")
+	}
+	for _, key := range keys {
+		if "" == key {
+			return int64Error("keys cannot be empty strings")
+		}
+	}
 	var del = func(conn redis.Conn) (int64, error) {
 		args := redis.Args{}.AddFlat(keys)
 		return redis.Int64(conn.Do("DEL", args...))
