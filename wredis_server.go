@@ -20,10 +20,30 @@ func (w *Wredis) FlushAll() error {
 	res, err := w.ExecString(flushall)
 	return checkSimpleStringResponse("FlushAll", res, err)
 }
+
+// FlushDb deletes all the keys from the currently selected database
+// See http://redis.io/commands/flushdb
+func (w *Wredis) FlushDb() error {
+	if w.safe {
+		return errors.New("FlushDb requires an Unsafe client." +
+			" See wredis.NewUnsafe.")
+	}
+	var flushdb = func(conn redis.Conn) (string, error) {
+		return redis.String(conn.Do("FlUSHDB"))
+	}
+	res, err := w.ExecString(flushdb)
+	return checkSimpleStringResponse("FlushDb", res, err)
+}
+
+// FlushSpecificDb is a convenience method for flushing a specified DB
+func (w *Wredis) FlushSpecificDb(db int) error {
+	if w.safe {
+		return errors.New("FlushSpecificDb requires an Unsafe client." +
+			" See wredis.NewUnsafe.")
+	}
+	err := w.Select(db)
 	if err != nil {
 		return err
-	} else if res != "OK" {
-		return fmt.Errorf("FlushAll did not get OK response: %s", res)
 	}
-	return nil
+	return w.FlushDb()
 }
