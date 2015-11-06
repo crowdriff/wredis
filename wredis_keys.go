@@ -19,7 +19,7 @@ func (w *Wredis) Del(keys ...string) (int64, error) {
 }
 
 // Exists checks for the existance of `key` in Redis. Note however,
-// even though a variable number of keys can be passed to the DEL command
+// even though a variable number of keys can be passed to the EXISTS command
 // since Redis 3.0.3, we will restrict this to a single key in order to
 // be able to return an absolute response regarding existence.
 // See http://redis.io/commands/exists
@@ -27,16 +27,26 @@ func (w *Wredis) Exists(key string) (bool, error) {
 	if key == "" {
 		return boolError("key cannot be empty")
 	}
-
 	var exists = func(conn redis.Conn) (int64, error) {
 		return redis.Int64(conn.Do("EXISTS", key))
 	}
-
 	res, err := w.ExecInt64(exists)
 	if err != nil {
 		return false, err
 	}
 	return res == int64(1), nil
+}
+
+// Keys takes a pattern and returns any/all keys matching the pattern.
+// See http://redis.io/commands/keys
+func (w *Wredis) Keys(pattern string) ([]string, error) {
+	if pattern == "" {
+		return stringsError("pattern cannot be empty")
+	}
+	var keys = func(conn redis.Conn) ([]string, error) {
+		return redis.Strings(conn.Do("KEYS", pattern))
+	}
+	return w.ExecStrings(keys)
 }
 
 // Rename will rename `key` to `newKey`. They must not be empty
