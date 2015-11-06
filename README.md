@@ -49,6 +49,7 @@ func main() {
 * __Keys__
   * Del: delete a key
   * Exists: does a key exist
+  * Keys: fetch a list of keys that match the given pattern
   * Rename: rename a key
 * __Server__
   * FlushAll: Flush the contents of the redis server (requires unsafe Wredis)
