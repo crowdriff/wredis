@@ -15,6 +15,8 @@ go get github.com/crowdriff/wredis
 
 ### Usage
 
+[API Reference](https://godoc.org/github.com/crowdriff/wredis)
+
 ```go
 import (
 	"log"
@@ -44,8 +46,9 @@ func main() {
 }
 ```
 
-### Implemented Methods
-
+### Implemented Commands
+* __Connection__
+  * Select: switch the redis database
 * __Keys__
   * Del: delete a key
   * Exists: does a key exist
@@ -53,6 +56,7 @@ func main() {
   * Rename: rename a key
 * __Server__
   * FlushAll: Flush the contents of the redis server (requires unsafe Wredis)
+  * FlushDb: Flush the contents of a specific redis db (requires unsafe Wredis)
 * __Sets__
   * SAdd: add members to a set
   * SCard: count of a set
@@ -63,6 +67,10 @@ func main() {
   * Get: get a key's value
   * Set: set a key's value
   * SetEx: set a key's value with an expiry in seconds
+
+### Convenience methods
+* FlushSpecificDb: selects a db before flushing it
+* SetExDuration: set a string with an expiry using a `time.Duration`
 
 ## Contributing
 
