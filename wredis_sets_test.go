@@ -40,6 +40,12 @@ var _ = Describe("Sets", func() {
 			Ω(safe.SCard(testKey)).Should(BeEquivalentTo(3))
 			Ω(safe.SCard(otherKey)).Should(BeEquivalentTo(4))
 		})
+
+		It("should fail given an empty key", func() {
+			_, err := safe.SCard("")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("key cannot be empty"))
+		})
 	})
 
 	Context("SDIFFSTORE", func() {
@@ -57,9 +63,22 @@ var _ = Describe("Sets", func() {
 			Ω(diff).Should(BeEquivalentTo(1))
 		})
 
-		It("should fail if empty parameters are passed", func() {
-			_, err := safe.SDiffStore("", "", "")
-			Ω(err).ShouldNot(BeNil())
+		It("should fail if empty dest is passed", func() {
+			_, err := safe.SDiffStore("")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("dest cannot be an empty string"))
+		})
+
+		It("should fail if no set keys are passed", func() {
+			_, err := safe.SDiffStore(diffKey)
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("SDiffStore requires at least 1 input set"))
+		})
+
+		It("should fail if not set keys are passed", func() {
+			_, err := safe.SDiffStore(diffKey, "key", "", "otherKey")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("set keys cannot be empty strings"))
 		})
 	})
 
@@ -93,9 +112,22 @@ var _ = Describe("Sets", func() {
 			Ω(union).Should(BeEquivalentTo(5))
 		})
 
-		It("should fail if empty parameters are passed", func() {
-			_, err := safe.SUnionStore("", "", "")
-			Ω(err).ShouldNot(BeNil())
+		It("should fail if empty dest is passed", func() {
+			_, err := safe.SUnionStore("")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("dest cannot be an empty string"))
+		})
+
+		It("should fail if no set keys are passed", func() {
+			_, err := safe.SUnionStore(unionKey)
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("SUnionStore requires at least 1 input set"))
+		})
+
+		It("should fail if not set keys are passed", func() {
+			_, err := safe.SUnionStore(unionKey, "key", "", "otherKey")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("set keys cannot be empty strings"))
 		})
 	})
 })
