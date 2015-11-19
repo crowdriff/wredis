@@ -11,8 +11,7 @@ import (
 // See http://redis.io/commands/flushall
 func (w *Wredis) FlushAll() error {
 	if w.safe {
-		return errors.New("FlushAll requires an Unsafe client." +
-			" See wredis.NewUnsafe.")
+		return unsafeError("FlushAll")
 	}
 	var flushall = func(conn redis.Conn) (string, error) {
 		return redis.String(conn.Do("FLUSHALL"))
@@ -25,8 +24,7 @@ func (w *Wredis) FlushAll() error {
 // See http://redis.io/commands/flushdb
 func (w *Wredis) FlushDb() error {
 	if w.safe {
-		return errors.New("FlushDb requires an Unsafe client." +
-			" See wredis.NewUnsafe.")
+		return unsafeError("FlushDb")
 	}
 	var flushdb = func(conn redis.Conn) (string, error) {
 		return redis.String(conn.Do("FlUSHDB"))
