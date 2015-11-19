@@ -1,10 +1,6 @@
 package wredis
 
-import (
-	"errors"
-
-	"github.com/garyburd/redigo/redis"
-)
+import "github.com/garyburd/redigo/redis"
 
 // FlushAll deletes all the keys from all the db's on the Redis
 // server. This is a very dangerous method to use in production.
@@ -31,17 +27,4 @@ func (w *Wredis) FlushDb() error {
 	}
 	res, err := w.ExecString(flushdb)
 	return checkSimpleStringResponse("FlushDb", res, err)
-}
-
-// FlushSpecificDb is a convenience method for flushing a specified DB
-func (w *Wredis) FlushSpecificDb(db int) error {
-	if w.safe {
-		return errors.New("FlushSpecificDb requires an Unsafe client." +
-			" See wredis.NewUnsafe.")
-	}
-	err := w.Select(db)
-	if err != nil {
-		return err
-	}
-	return w.FlushDb()
 }

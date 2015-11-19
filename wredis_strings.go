@@ -2,7 +2,6 @@ package wredis
 
 import (
 	"errors"
-	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -48,13 +47,4 @@ func (w *Wredis) SetEx(key, value string, seconds int) error {
 	}
 	res, err := w.ExecString(setEx)
 	return checkSimpleStringResponse("SetEx", res, err)
-}
-
-// SetExDuration is a convenience method to set a key's value with and expiry time.
-func (w *Wredis) SetExDuration(key, value string, duration time.Duration) error {
-	seconds := int(duration.Seconds())
-	if seconds <= 0 {
-		return errors.New("duration must be at least 1 second")
-	}
-	return w.SetEx(key, value, seconds)
 }
