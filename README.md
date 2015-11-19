@@ -69,8 +69,12 @@ func main() {
   * SetEx: set a key's value with an expiry in seconds
 
 ### Convenience methods
-* FlushSpecificDb: selects a db before flushing it
-* SetExDuration: set a string with an expiry using a `time.Duration`
+* __Keys__
+  * DelWithPattern: delete all keys matching a pattern
+* __Server__
+  * SelectAndFlushDb: selects a db before flushing it
+* __Strings__
+  * SetExDuration: set a string with an expiry using a `time.Duration`
 
 ## Contributing
 
