@@ -65,6 +65,14 @@ func NewUnsafe(host string, port, db uint) (*Wredis, error) {
 	return w, nil
 }
 
+// ExecBool is a helper function to execute any series of commands
+// on a redis.Conn that returns a bool response
+func (w *Wredis) ExecBool(f func(redis.Conn) (bool, error)) (bool, error) {
+	conn := w.pool.Get()
+	defer conn.Close()
+	return f(conn)
+}
+
 // ExecInt64 is a helper function to execute any series of commands
 // on a redis.Conn that return an int64 response
 func (w *Wredis) ExecInt64(f func(redis.Conn) (int64, error)) (int64, error) {

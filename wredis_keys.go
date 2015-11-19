@@ -34,14 +34,10 @@ func (w *Wredis) Exists(key string) (bool, error) {
 	if key == "" {
 		return boolError("key cannot be empty")
 	}
-	var exists = func(conn redis.Conn) (int64, error) {
-		return redis.Int64(conn.Do("EXISTS", key))
+	var exists = func(conn redis.Conn) (bool, error) {
+		return redis.Bool(conn.Do("EXISTS", key))
 	}
-	res, err := w.ExecInt64(exists)
-	if err != nil {
-		return false, err
-	}
-	return res == int64(1), nil
+	return w.ExecBool(exists)
 }
 
 // Keys takes a pattern and returns any/all keys matching the pattern.
