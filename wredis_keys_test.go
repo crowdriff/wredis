@@ -12,6 +12,42 @@ var _ = Describe("Keys", func() {
 	testKey := "wredis::test::keys"
 	testVal := "testvalue"
 
+	Describe("DEL", func() {
+		BeforeEach(func() {
+			Ω(safe.Set(testKey, testVal)).Should(Succeed())
+			Ω(safe.Exists(testKey)).Should(BeTrue())
+		})
+
+		AfterEach(func() {
+			Ω(unsafe.FlushAll()).Should(Succeed())
+		})
+
+		It("should delete a key successfully", func() {
+			Ω(safe.Del(testKey)).Should(BeEquivalentTo(1))
+			Ω(safe.Exists(testKey)).Should(BeFalse())
+		})
+
+		It("should fail if not given any keys", func() {
+			_, err := safe.Del()
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("must provide at least 1 key"))
+
+			_, err = safe.Del([]string{}...)
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("must provide at least 1 key"))
+		})
+
+		It("should fail if any of the keys are empty", func() {
+			_, err := safe.Del("")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("keys cannot be empty strings"))
+
+			_, err = safe.Del([]string{""}...)
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("keys cannot be empty strings"))
+		})
+	})
+
 	Describe("EXISTS", func() {
 		AfterEach(func() {
 			Ω(unsafe.FlushAll()).Should(Succeed())
@@ -24,6 +60,12 @@ var _ = Describe("Keys", func() {
 
 		It("should return false if a key does not exist", func() {
 			Ω(safe.Exists(testKey)).Should(BeFalse())
+		})
+
+		It("should fail if given an empty key", func() {
+			_, err := safe.Exists("")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("key cannot be empty"))
 		})
 	})
 
@@ -83,7 +125,5 @@ var _ = Describe("Keys", func() {
 			Ω(safe.Rename("", "test")).ShouldNot(Succeed())
 			Ω(safe.Rename("test", "")).ShouldNot(Succeed())
 		})
-
 	})
-
 })

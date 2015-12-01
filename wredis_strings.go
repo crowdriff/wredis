@@ -2,8 +2,6 @@ package wredis
 
 import (
 	"errors"
-	"fmt"
-	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -30,12 +28,7 @@ func (w *Wredis) Set(key, value string) error {
 		return redis.String(conn.Do("SET", key, value))
 	}
 	res, err := w.ExecString(set)
-	if err != nil {
-		return err
-	} else if res != "OK" {
-		return fmt.Errorf("SET returned non OK response: %s", res)
-	}
-	return nil
+	return checkSimpleStringResponse("Set", res, err)
 }
 
 // SetEx sets key's to value with an expiry time measured in seconds.
@@ -53,19 +46,5 @@ func (w *Wredis) SetEx(key, value string, seconds int) error {
 		return redis.String(conn.Do("SETEX", args...))
 	}
 	res, err := w.ExecString(setEx)
-	if err != nil {
-		return err
-	} else if res != "OK" {
-		return fmt.Errorf("SETEX returned non OK response: %s", res)
-	}
-	return nil
-}
-
-// SetExDuration is a convenience method to set a key's value with and expiry time.
-func (w *Wredis) SetExDuration(key, value string, duration time.Duration) error {
-	seconds := int(duration.Seconds())
-	if seconds <= 0 {
-		return errors.New("duration must be at least 1 second")
-	}
-	return w.SetEx(key, value, seconds)
+	return checkSimpleStringResponse("SetEx", res, err)
 }

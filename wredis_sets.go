@@ -36,7 +36,7 @@ func (w *Wredis) SDiffStore(dest string, sets ...string) (int64, error) {
 		return int64Error("dest cannot be an empty string")
 	}
 	if len(sets) == 0 {
-		return int64Error("SDiffStore requires atleast 1 input set")
+		return int64Error("SDiffStore requires at least 1 input set")
 	}
 	for _, s := range sets {
 		if s == "" {
