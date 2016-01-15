@@ -18,6 +18,18 @@ func (w *Wredis) Get(key string) (string, error) {
 	return w.ExecString(get)
 }
 
+// Incr increments the number stored at key by one.
+// See http://redis.io/commands/incr
+func (w *Wredis) Incr(key string) (int64, error) {
+	if key == "" {
+		return 0, errors.New("key cannot be an empty string")
+	}
+	var incr = func(conn redis.Conn) (int64, error) {
+		return redis.Int64(conn.Do("INCR", key))
+	}
+	return w.ExecInt64(incr)
+}
+
 // Set sets a key's string value.
 // See http://redis.io/commands/set
 func (w *Wredis) Set(key, value string) error {

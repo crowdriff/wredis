@@ -40,6 +40,21 @@ func (w *Wredis) Exists(key string) (bool, error) {
 	return w.ExecBool(exists)
 }
 
+// Expire sets a timeout of "seconds" on "key".
+// If an error is encountered, it is returned. If the key doesn't exist or the
+// timeout couldn't be set, `false, nil` is returned. On success, `true, nil`
+// is returned.
+// See http://redis.io/commands/expire
+func (w *Wredis) Expire(key string, seconds int) (bool, error) {
+	if key == "" {
+		return false, errors.New("key cannot be an empty string")
+	}
+	var expire = func(conn redis.Conn) (bool, error) {
+		return redis.Bool(conn.Do("EXPIRE", key, seconds))
+	}
+	return w.ExecBool(expire)
+}
+
 // Keys takes a pattern and returns any/all keys matching the pattern.
 // See http://redis.io/commands/keys
 func (w *Wredis) Keys(pattern string) ([]string, error) {

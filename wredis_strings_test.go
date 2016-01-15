@@ -27,6 +27,29 @@ var _ = Describe("Strings", func() {
 		Ω(val).Should(Equal(testVal))
 	})
 
+	Context("INCR", func() {
+
+		It("should return an error with an empty key provided", func() {
+			_, err := safe.Incr("")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("key cannot be an empty string"))
+		})
+
+		It("should create and increment a new key", func() {
+			n, err := safe.Incr(testKey)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(n).Should(Equal(int64(1)))
+		})
+
+		It("should increment a key up to 10", func() {
+			for i := 0; i < 10; i++ {
+				n, err := safe.Incr(testKey)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(n).Should(Equal(int64(i + 1)))
+			}
+		})
+	})
+
 	Context("SETEX", func() {
 		It("should set a key, which expires successfully", func() {
 			err := safe.SetEx(testKey, testVal, 1)

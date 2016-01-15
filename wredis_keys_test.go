@@ -2,7 +2,9 @@ package wredis_test
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/garyburd/redigo/redis"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -66,6 +68,56 @@ var _ = Describe("Keys", func() {
 			_, err := safe.Exists("")
 			Ω(err).Should(HaveOccurred())
 			Ω(err.Error()).Should(Equal("key cannot be empty"))
+		})
+	})
+
+	Describe("EXPIRE", func() {
+		AfterEach(func() {
+			Ω(unsafe.FlushAll()).Should(Succeed())
+		})
+
+		It("should return an error if a blank key is provided", func() {
+			_, err := safe.Expire("", 0)
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("key cannot be an empty string"))
+		})
+
+		It("should return false when expire called on a non-existing key", func() {
+			ok, err := safe.Expire(testKey, 10)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ok).Should(BeFalse())
+		})
+
+		It("should set an expire value", func() {
+			Ω(safe.Set(testKey, testVal)).ShouldNot(HaveOccurred())
+			ok, err := safe.Expire(testKey, 10)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ok).Should(BeTrue())
+			n, err := safe.ExecInt64(func(conn redis.Conn) (int64, error) {
+				return redis.Int64(conn.Do("TTL", testKey))
+			})
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(n).Should(BeNumerically(">", int64(0)))
+		})
+
+		It("should set an expire value of 1 second", func() {
+			Ω(safe.Set(testKey, testVal)).ShouldNot(HaveOccurred())
+			ok, err := safe.Expire(testKey, 1)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ok).Should(BeTrue())
+			Eventually(func() (bool, error) {
+				return safe.Exists(testKey)
+			}, 2*time.Second, 100*time.Millisecond).Should(BeFalse())
+		})
+
+		It("should expire a key immediately", func() {
+			Ω(safe.Set(testKey, testVal)).ShouldNot(HaveOccurred())
+			ok, err := safe.Expire(testKey, 0)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ok).Should(BeTrue())
+			ok, err = safe.Exists(testKey)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ok).Should(BeFalse())
 		})
 	})
 

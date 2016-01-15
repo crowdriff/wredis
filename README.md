@@ -52,6 +52,7 @@ func main() {
 * __Keys__
   * Del: delete a key
   * Exists: does a key exist
+  * Expire: set an expiry time for a key
   * Keys: fetch a list of keys that match the given pattern
   * Rename: rename a key
 * __Server__
@@ -65,6 +66,7 @@ func main() {
   * SUnionStore: perform a union and store the results in redis
 * __Strings__
   * Get: get a key's value
+  * Incr: increment a key's value by 1
   * Set: set a key's value
   * SetEx: set a key's value with an expiry in seconds
 
