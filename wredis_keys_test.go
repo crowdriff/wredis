@@ -2,6 +2,7 @@ package wredis_test
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 	. "github.com/onsi/ginkgo"
@@ -97,6 +98,16 @@ var _ = Describe("Keys", func() {
 			})
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(n).Should(BeNumerically(">", int64(0)))
+		})
+
+		It("should set an expire value of 1 second", func() {
+			Ω(safe.Set(testKey, testVal)).ShouldNot(HaveOccurred())
+			ok, err := safe.Expire(testKey, 1)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ok).Should(BeTrue())
+			Eventually(func() (bool, error) {
+				return safe.Exists(testKey)
+			}, 2*time.Second, 100*time.Millisecond).Should(BeFalse())
 		})
 
 		It("should expire a key immediately", func() {
