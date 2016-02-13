@@ -25,7 +25,7 @@ func (w *Wredis) Del(keys ...string) (int64, error) {
 	return w.ExecInt64(del)
 }
 
-// Exists checks for the existance of `key` in Redis. Note however,
+// Exists checks for the existence of `key` in Redis. Note however,
 // even though a variable number of keys can be passed to the EXISTS command
 // since Redis 3.0.3, we will restrict this to a single key in order to
 // be able to return an absolute response regarding existence.
