@@ -43,4 +43,16 @@ var _ = Describe("Wredis", func() {
 		Ω(pool).ShouldNot(BeNil())
 		Ω(pool.FlushAll()).Should(Succeed())
 	})
+
+	It("should fail to create an unsafe pool given an empty host", func() {
+		_, err := NewUnsafe("", 6379, 0)
+		Ω(err).Should(HaveOccurred())
+		Ω(err.Error()).Should(Equal("host cannot be empty"))
+	})
+
+	It("should fail to create an unsafe pool given an invalid port", func() {
+		_, err := NewUnsafe("localhost", 0, 0)
+		Ω(err).Should(HaveOccurred())
+		Ω(err.Error()).Should(Equal("port cannot be 0"))
+	})
 })

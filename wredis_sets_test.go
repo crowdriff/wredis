@@ -1,6 +1,8 @@
 package wredis_test
 
 import (
+	. "github.com/crowdriff/wredis"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -43,8 +45,7 @@ var _ = Describe("Sets", func() {
 
 		It("should fail given an empty key", func() {
 			_, err := safe.SCard("")
-			Ω(err).Should(HaveOccurred())
-			Ω(err.Error()).Should(Equal("key cannot be empty"))
+			Ω(err).Should(MatchError(EmptyKeyErr))
 		})
 	})
 
@@ -92,8 +93,7 @@ var _ = Describe("Sets", func() {
 
 		It("should return an error if key passed is empty", func() {
 			_, err := safe.SMembers("")
-			Ω(err).ShouldNot(BeNil())
-			Ω(err.Error()).Should(Equal("key cannot be an empty string"))
+			Ω(err).Should(MatchError(EmptyKeyErr))
 		})
 	})
 

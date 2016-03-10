@@ -3,6 +3,8 @@ package wredis_test
 import (
 	"time"
 
+	. "github.com/crowdriff/wredis"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -18,21 +20,31 @@ var _ = Describe("Strings", func() {
 		Ω(unsafe.FlushAll()).Should(Succeed())
 	})
 
-	It("should SET and then GET a key correctly", func() {
-		err := safe.Set(testKey, testVal)
-		Ω(err).Should(BeNil())
+	Context("GET/SET", func() {
+		It("should fail to GET given an empty key", func() {
+			_, err := safe.Get("")
+			Ω(err).Should(MatchError(EmptyKeyErr))
+		})
 
-		val, err := safe.Get(testKey)
-		Ω(err).Should(BeNil())
-		Ω(val).Should(Equal(testVal))
+		It("should fail to SET given an empty key", func() {
+			err := safe.Set("", "value")
+			Ω(err).Should(MatchError(EmptyKeyErr))
+		})
+
+		It("should SET and then GET a key correctly", func() {
+			err := safe.Set(testKey, testVal)
+			Ω(err).Should(BeNil())
+
+			val, err := safe.Get(testKey)
+			Ω(err).Should(BeNil())
+			Ω(val).Should(Equal(testVal))
+		})
 	})
 
 	Context("INCR", func() {
-
 		It("should return an error with an empty key provided", func() {
 			_, err := safe.Incr("")
-			Ω(err).Should(HaveOccurred())
-			Ω(err.Error()).Should(Equal("key cannot be an empty string"))
+			Ω(err).Should(MatchError(EmptyKeyErr))
 		})
 
 		It("should create and increment a new key", func() {
@@ -51,6 +63,17 @@ var _ = Describe("Strings", func() {
 	})
 
 	Context("SETEX", func() {
+		It("should fail when given an empty key", func() {
+			err := safe.SetEx("", testVal, 1)
+			Ω(err).Should(MatchError(EmptyKeyErr))
+		})
+
+		It("should fail when given 0 or negative seconds", func() {
+			err := safe.SetEx(testKey, testVal, 0)
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("seconds must be a postive integer"))
+		})
+
 		It("should set a key, which expires successfully", func() {
 			err := safe.SetEx(testKey, testVal, 1)
 			Ω(err).Should(BeNil())
@@ -63,18 +86,5 @@ var _ = Describe("Strings", func() {
 				return safe.Exists(testKey)
 			}, 2*time.Second, 100*time.Millisecond).Should(BeFalse())
 		})
-
-		It("should fail when given an empty key", func() {
-			err := safe.SetEx("", testVal, 1)
-			Ω(err).ShouldNot(BeNil())
-			Ω(err.Error()).Should(Equal("key cannot be an empty string"))
-		})
-
-		It("should fail when given a small druation", func() {
-			err := safe.SetExDuration(testKey, testVal, 500*time.Millisecond)
-			Ω(err).ShouldNot(BeNil())
-			Ω(err.Error()).Should(Equal("duration must be at least 1 second"))
-		})
 	})
-
 })
