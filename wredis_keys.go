@@ -10,12 +10,12 @@ import (
 // keys were actually deleted.
 // See http://redis.io/commands/del
 func (w *Wredis) Del(keys ...string) (int64, error) {
-	if keys == nil || len(keys) == 0 {
+	if len(keys) == 0 {
 		return int64Error("must provide at least 1 key")
 	}
 	for _, key := range keys {
 		if "" == key {
-			return int64Error("keys cannot be empty strings")
+			return int64Err(EmptyKeyErr)
 		}
 	}
 	var del = func(conn redis.Conn) (int64, error) {
@@ -32,7 +32,7 @@ func (w *Wredis) Del(keys ...string) (int64, error) {
 // See http://redis.io/commands/exists
 func (w *Wredis) Exists(key string) (bool, error) {
 	if key == "" {
-		return boolError("key cannot be empty")
+		return boolErr(EmptyKeyErr)
 	}
 	var exists = func(conn redis.Conn) (bool, error) {
 		return redis.Bool(conn.Do("EXISTS", key))
@@ -47,7 +47,7 @@ func (w *Wredis) Exists(key string) (bool, error) {
 // See http://redis.io/commands/expire
 func (w *Wredis) Expire(key string, seconds int) (bool, error) {
 	if key == "" {
-		return false, errors.New("key cannot be an empty string")
+		return boolErr(EmptyKeyErr)
 	}
 	var expire = func(conn redis.Conn) (bool, error) {
 		return redis.Bool(conn.Do("EXPIRE", key, seconds))
@@ -59,7 +59,7 @@ func (w *Wredis) Expire(key string, seconds int) (bool, error) {
 // See http://redis.io/commands/keys
 func (w *Wredis) Keys(pattern string) ([]string, error) {
 	if pattern == "" {
-		return stringsError("pattern cannot be empty")
+		return stringsErr(EmptyPatternErr)
 	}
 	var keys = func(conn redis.Conn) ([]string, error) {
 		return redis.Strings(conn.Do("KEYS", pattern))
@@ -72,7 +72,7 @@ func (w *Wredis) Keys(pattern string) ([]string, error) {
 // See `http://redis.io/commands/rename`
 func (w *Wredis) Rename(key, newKey string) error {
 	if key == "" || newKey == "" {
-		return errors.New("key and newKey cannot be empty")
+		return EmptyKeyErr
 	}
 	if key == newKey {
 		return errors.New("key cannot be equal to newKey")
