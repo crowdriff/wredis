@@ -1,7 +1,5 @@
-Wredis
+Wredis [![Build Status](https://travis-ci.org/crowdriff/wredis.svg?branch=master)](https://travis-ci.org/crowdriff/wredis) [![Go Report Card](https://goreportcard.com/badge/github.com/crowdriff/wredis)](https://goreportcard.com/report/github.com/crowdriff/wredis) [![GoDoc](https://godoc.org/github.com/crowdriff/traffic?status.svg)](https://godoc.org/github.com/crowdriff/traffic)
 ===
-
-[![Build Status](https://travis-ci.org/crowdriff/wredis.svg?branch=master)](https://travis-ci.org/crowdriff/wredis) [![Go Report Card](https://goreportcard.com/badge/github.com/crowdriff/wredis)](https://goreportcard.com/report/github.com/crowdriff/wredis)
 
 Wredis is a wrapper around the [redigo](https://github.com/garyburd/redigo) `redis.Pool` and provides an easy-to-use API for [Redis commands](http://redis.io/commands)
 

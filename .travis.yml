@@ -3,7 +3,6 @@ language: go
 go:
   - 1.5
   - 1.6
-  - tip
 
 services:
   - redis-server
@@ -13,3 +12,7 @@ install:
   - make deps
 
 script: make test
+
+after_script:
+  - go get github.com/mattn/goveralls
+  - goveralls -coverprofile=wredis.coverprofile -service=travis-ci

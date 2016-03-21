@@ -1,10 +1,6 @@
-version=0.1.4
+version=0.1.5
 
 .PHONY: all
-
-# To cross compile for linux on mac, build go-linux cross compiler first using
-# cd /usr/local/go/src
-# sudo GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./make.bash --no-clean
 
 all:
 	@echo "make <cmd>"
@@ -12,12 +8,10 @@ all:
 	@echo "commands:"
 	@echo "  build         - build the dist binary"
 	@echo "  clean         - clean the dist build"
-	@echo "  coverage      - generate a test coverage report"
 	@echo "  deps          - pull and setup dependencies"
-	@echo "  install       - run go install for all sub packages"
 	@echo "  test          - run tests"
 	@echo "  tools         - go get's a bunch of tools for development"
-	@echo "  update_deps   - update deps lock file"
+	@echo "  update_deps   - update deps glock file"
 
 build: clean
 	@go build ./...
@@ -27,17 +21,11 @@ build: clean
 clean:
 	@rm -rf ./bin
 
-coverage:
-	@go test -cover -v ./...
-
 deps:
 	@glock sync -n github.com/crowdriff/wredis < Glockfile
 
-install:
-	@go install ./...
-
 test:
-	@ginkgo
+	@ginkgo -r -v -cover -race
 
 tools:
 	go get github.com/robfig/glock
