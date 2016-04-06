@@ -23,3 +23,14 @@ func (w *Wredis) LPush(key string, items ...string) (int64, error) {
 		return redis.Int64(conn.Do("LPUSH", args...))
 	})
 }
+
+// RPop removes and returns the last element of the list stored at key. For more
+// information, see http://redis.io/commands/rpop.
+func (w *Wredis) RPop(key string) (string, error) {
+	if key == "" {
+		return stringError("key cannot be empty")
+	}
+	return w.ExecString(func(conn redis.Conn) (string, error) {
+		return redis.String(conn.Do("RPOP", key))
+	})
+}
