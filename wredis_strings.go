@@ -18,6 +18,20 @@ func (w *Wredis) Get(key string) (string, error) {
 	return w.ExecString(get)
 }
 
+// MGet returns the values of all provided keys. For a key that does not exist,
+// an empty string is returned. See http://redis.io/commands/mget.
+func (w *Wredis) MGet(keys []string) ([]string, error) {
+	for _, key := range keys {
+		if key == "" {
+			return stringsError("keys cannot be empty")
+		}
+	}
+	return w.ExecStrings(func(conn redis.Conn) ([]string, error) {
+		args := redis.Args{}.AddFlat(keys)
+		return redis.Strings(conn.Do("MGET", args...))
+	})
+}
+
 // Incr increments the number stored at key by one.
 // See http://redis.io/commands/incr
 func (w *Wredis) Incr(key string) (int64, error) {
