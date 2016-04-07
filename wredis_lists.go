@@ -31,6 +31,19 @@ func (w *Wredis) RPop(key string) (string, error) {
 		return stringError("key cannot be empty")
 	}
 	return w.ExecString(func(conn redis.Conn) (string, error) {
-		return redis.String(conn.Do("RPOP", key))
+		args := redis.Args{}.Add(key)
+		return redis.String(conn.Do("RPOP", args...))
+	})
+}
+
+// LLen returns the length of the list stored at key. For more information, see
+// http://redis.io/commands/llen.
+func (w *Wredis) LLen(key string) (int64, error) {
+	if key == "" {
+		return int64Error("key cannot be empty")
+	}
+	return w.ExecInt64(func(conn redis.Conn) (int64, error) {
+		args := redis.Args{}.Add(key)
+		return redis.Int64(conn.Do("LLEN", args...))
 	})
 }

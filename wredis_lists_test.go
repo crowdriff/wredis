@@ -9,11 +9,11 @@ var _ = Describe("WredisLists", func() {
 
 	var testList = "wredis::test::list"
 
-	Context("LPush", func() {
-		BeforeEach(func() {
-			unsafe.Del(testList)
-		})
+	BeforeEach(func() {
+		unsafe.Del(testList)
+	})
 
+	Context("LPush", func() {
 		It("should return an error when no key provided", func() {
 			_, err := safe.LPush("")
 			Ω(err).Should(HaveOccurred())
@@ -50,10 +50,6 @@ var _ = Describe("WredisLists", func() {
 	})
 
 	Context("RPop", func() {
-		BeforeEach(func() {
-			unsafe.Del(testList)
-		})
-
 		It("should return an error when no key provided", func() {
 			_, err := safe.RPop("")
 			Ω(err).Should(HaveOccurred())
@@ -74,6 +70,28 @@ var _ = Describe("WredisLists", func() {
 			i, err := safe.RPop(testList)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(i).Should(Equal("1"))
+		})
+	})
+
+	Context("LLen", func() {
+		It("should return an error when no key provided", func() {
+			_, err := safe.LLen("")
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("key cannot be empty"))
+		})
+
+		It("should return 0 when the list doesn't exist", func() {
+			i, err := safe.LLen(testList)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(i).Should(Equal(int64(0)))
+		})
+
+		It("should return the length of the list", func() {
+			_, err := safe.LPush(testList, "1", "2", "3")
+			Ω(err).ShouldNot(HaveOccurred())
+			i, err := safe.LLen(testList)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(i).Should(Equal(int64(3)))
 		})
 	})
 })
