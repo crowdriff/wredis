@@ -27,6 +27,27 @@ var _ = Describe("Strings", func() {
 		Ω(val).Should(Equal(testVal))
 	})
 
+	Context("MGET", func() {
+		It("should return an error when a key is empty", func() {
+			_, err := safe.MGet([]string{"1", "2", ""})
+			Ω(err).Should(HaveOccurred())
+			Ω(err.Error()).Should(Equal("keys cannot be empty"))
+		})
+
+		It("should return all values for the provided keys", func() {
+			// insert keys into redis
+			Ω(safe.Set("1", "one")).Should(Succeed())
+			Ω(safe.Set("2", "two")).Should(Succeed())
+			// get values
+			vals, err := safe.MGet([]string{"1", "2", "3"})
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(vals).Should(HaveLen(3))
+			Ω(vals[0]).Should(Equal("one"))
+			Ω(vals[1]).Should(Equal("two"))
+			Ω(vals[2]).Should(Equal(""))
+		})
+	})
+
 	Context("INCR", func() {
 
 		It("should return an error with an empty key provided", func() {
