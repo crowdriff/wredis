@@ -6,6 +6,7 @@ import (
 )
 
 var _ = Describe("Connection", func() {
+
 	Context("SELECT", func() {
 		It("Should successfully select a different database", func() {
 			Ω(safe.Select(1)).Should(Succeed())

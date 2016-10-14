@@ -7,7 +7,7 @@ import "github.com/garyburd/redigo/redis"
 // otherwise it returns the number of members added.
 // See http://redis.io/commands/sadd
 func (w *Wredis) SAdd(dest string, members []string) (int64, error) {
-	if members == nil || len(members) == 0 {
+	if len(members) == 0 {
 		return int64Error("members cannot be an empty slice")
 	}
 	var sadd = func(conn redis.Conn) (int64, error) {
@@ -21,7 +21,7 @@ func (w *Wredis) SAdd(dest string, members []string) (int64, error) {
 // See http://redis.io/commands/scard
 func (w *Wredis) SCard(key string) (int64, error) {
 	if key == "" {
-		return int64Error("key cannot be empty")
+		return int64Err(EmptyKeyErr)
 	}
 	var scard = func(conn redis.Conn) (int64, error) {
 		return redis.Int64(conn.Do("SCARD", key))
@@ -54,7 +54,7 @@ func (w *Wredis) SDiffStore(dest string, sets ...string) (int64, error) {
 // See http://redis.io/commands/smembers
 func (w *Wredis) SMembers(key string) ([]string, error) {
 	if key == "" {
-		return stringsError("key cannot be an empty string")
+		return stringsErr(EmptyKeyErr)
 	}
 	var smembers = func(conn redis.Conn) ([]string, error) {
 		return redis.Strings(conn.Do("SMEMBERS", key))

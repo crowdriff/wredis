@@ -10,7 +10,7 @@ import (
 // See http://redis.io/commands/get
 func (w *Wredis) Get(key string) (string, error) {
 	if key == "" {
-		return stringError("key cannot be an empty string")
+		return stringErr(EmptyKeyErr)
 	}
 	var get = func(conn redis.Conn) (string, error) {
 		return redis.String(conn.Do("GET", key))
@@ -36,7 +36,7 @@ func (w *Wredis) MGet(keys []string) ([]string, error) {
 // See http://redis.io/commands/incr
 func (w *Wredis) Incr(key string) (int64, error) {
 	if key == "" {
-		return 0, errors.New("key cannot be an empty string")
+		return int64Err(EmptyKeyErr)
 	}
 	var incr = func(conn redis.Conn) (int64, error) {
 		return redis.Int64(conn.Do("INCR", key))
@@ -48,7 +48,7 @@ func (w *Wredis) Incr(key string) (int64, error) {
 // See http://redis.io/commands/set
 func (w *Wredis) Set(key, value string) error {
 	if key == "" {
-		return errors.New("key cannot be an empty string")
+		return EmptyKeyErr
 	}
 	var set = func(conn redis.Conn) (string, error) {
 		return redis.String(conn.Do("SET", key, value))
@@ -61,7 +61,7 @@ func (w *Wredis) Set(key, value string) error {
 // See http://redis.io/commands/setex
 func (w *Wredis) SetEx(key, value string, seconds int) error {
 	if key == "" {
-		return errors.New("key cannot be an empty string")
+		return EmptyKeyErr
 	}
 	if seconds <= 0 {
 		return errors.New("seconds must be a postive integer")

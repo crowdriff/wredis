@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+
+	. "github.com/crowdriff/wredis"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -14,7 +17,7 @@ var _ = Describe("Keys", func() {
 	testKey := "wredis::test::keys"
 	testVal := "testvalue"
 
-	Describe("DEL", func() {
+	Context("DEL", func() {
 		BeforeEach(func() {
 			Ω(safe.Set(testKey, testVal)).Should(Succeed())
 			Ω(safe.Exists(testKey)).Should(BeTrue())
@@ -41,16 +44,14 @@ var _ = Describe("Keys", func() {
 
 		It("should fail if any of the keys are empty", func() {
 			_, err := safe.Del("")
-			Ω(err).Should(HaveOccurred())
-			Ω(err.Error()).Should(Equal("keys cannot be empty strings"))
+			Ω(err).Should(MatchError(EmptyKeyErr))
 
 			_, err = safe.Del([]string{""}...)
-			Ω(err).Should(HaveOccurred())
-			Ω(err.Error()).Should(Equal("keys cannot be empty strings"))
+			Ω(err).Should(MatchError(EmptyKeyErr))
 		})
 	})
 
-	Describe("EXISTS", func() {
+	Context("EXISTS", func() {
 		AfterEach(func() {
 			Ω(unsafe.FlushAll()).Should(Succeed())
 		})
@@ -66,20 +67,18 @@ var _ = Describe("Keys", func() {
 
 		It("should fail if given an empty key", func() {
 			_, err := safe.Exists("")
-			Ω(err).Should(HaveOccurred())
-			Ω(err.Error()).Should(Equal("key cannot be empty"))
+			Ω(err).Should(MatchError(EmptyKeyErr))
 		})
 	})
 
-	Describe("EXPIRE", func() {
+	Context("EXPIRE", func() {
 		AfterEach(func() {
 			Ω(unsafe.FlushAll()).Should(Succeed())
 		})
 
 		It("should return an error if a blank key is provided", func() {
 			_, err := safe.Expire("", 0)
-			Ω(err).Should(HaveOccurred())
-			Ω(err.Error()).Should(Equal("key cannot be an empty string"))
+			Ω(err).Should(MatchError(EmptyKeyErr))
 		})
 
 		It("should return false when expire called on a non-existing key", func() {
@@ -89,7 +88,7 @@ var _ = Describe("Keys", func() {
 		})
 
 		It("should set an expire value", func() {
-			Ω(safe.Set(testKey, testVal)).ShouldNot(HaveOccurred())
+			Ω(safe.Set(testKey, testVal)).Should(Succeed())
 			ok, err := safe.Expire(testKey, 10)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(ok).Should(BeTrue())
@@ -101,7 +100,7 @@ var _ = Describe("Keys", func() {
 		})
 
 		It("should set an expire value of 1 second", func() {
-			Ω(safe.Set(testKey, testVal)).ShouldNot(HaveOccurred())
+			Ω(safe.Set(testKey, testVal)).Should(Succeed())
 			ok, err := safe.Expire(testKey, 1)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(ok).Should(BeTrue())
@@ -111,7 +110,7 @@ var _ = Describe("Keys", func() {
 		})
 
 		It("should expire a key immediately", func() {
-			Ω(safe.Set(testKey, testVal)).ShouldNot(HaveOccurred())
+			Ω(safe.Set(testKey, testVal)).Should(Succeed())
 			ok, err := safe.Expire(testKey, 0)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(ok).Should(BeTrue())
@@ -121,7 +120,7 @@ var _ = Describe("Keys", func() {
 		})
 	})
 
-	Describe("KEYS", func() {
+	Context("KEYS", func() {
 		BeforeEach(func() {
 			Ω(safe.Set(testKey, testVal)).Should(Succeed())
 			Ω(safe.Set(fmt.Sprintf("%s::second", testKey), testVal)).Should(
@@ -134,31 +133,46 @@ var _ = Describe("Keys", func() {
 			Ω(unsafe.FlushAll()).Should(Succeed())
 		})
 
+		It("should return an error given an empty pattern", func() {
+			_, err := safe.Keys("")
+			Ω(err).Should(MatchError(EmptyPatternErr))
+		})
+
 		It("should fetch all 3 keys with the general pattern", func() {
 			pattern := "wredis::test::*"
 			keys, err := safe.Keys(pattern)
-			Ω(err).Should(BeNil())
+			Ω(err).ShouldNot(HaveOccurred())
 			Ω(len(keys)).Should(Equal(3))
 		})
 
 		It("should fetch 2 keys with the specific pattern", func() {
 			pattern := "wredis::test::keys::*"
 			keys, err := safe.Keys(pattern)
-			Ω(err).Should(BeNil())
+			Ω(err).ShouldNot(HaveOccurred())
 			Ω(len(keys)).Should(Equal(2))
 		})
 
 		It("should be able to handle patterns that return no keys", func() {
 			pattern := "redis::test::keys::*"
 			keys, err := safe.Keys(pattern)
-			Ω(err).Should(BeNil())
+			Ω(err).ShouldNot(HaveOccurred())
 			Ω(len(keys)).Should(Equal(0))
 		})
 	})
 
-	Describe("RENAME", func() {
+	Context("RENAME", func() {
 		AfterEach(func() {
 			Ω(unsafe.FlushAll()).Should(Succeed())
+		})
+
+		It("should fail if any of the keys are empty strings", func() {
+			Ω(safe.Rename("", "")).ShouldNot(Succeed())
+			Ω(safe.Rename("", "test")).ShouldNot(Succeed())
+			Ω(safe.Rename("test", "")).ShouldNot(Succeed())
+		})
+
+		It("should fail if the keys are identical", func() {
+			Ω(safe.Rename("test", "test")).ShouldNot(Succeed())
 		})
 
 		It("should rename a key successfully", func() {
@@ -172,10 +186,5 @@ var _ = Describe("Keys", func() {
 			Ω(safe.Get(newKey)).Should(Equal(testVal))
 		})
 
-		It("should fail if any of the keys are empty strings", func() {
-			Ω(safe.Rename("", "")).ShouldNot(Succeed())
-			Ω(safe.Rename("", "test")).ShouldNot(Succeed())
-			Ω(safe.Rename("test", "")).ShouldNot(Succeed())
-		})
 	})
 })

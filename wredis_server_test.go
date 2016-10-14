@@ -6,6 +6,7 @@ import (
 )
 
 var _ = Describe("Server", func() {
+
 	Context("FLUSHALL", func() {
 		It("Should not be able to FlushAll with a safe client", func() {
 			err := safe.FlushAll()
